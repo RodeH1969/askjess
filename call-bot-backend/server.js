@@ -2,9 +2,10 @@ const express = require('express');
 const fs = require('fs').promises;
 const path = require('path');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '../call-bot-frontend/public')));
 
 const logFilePath = path.join('C:', 'Users', 'apt20', 'OneDrive', 'Desktop', 'Bland caller lists', 'callers.log');
 
