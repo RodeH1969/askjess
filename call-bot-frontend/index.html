@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbound Call Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+        .image-container img {
+            width: 400px; /* Larger image size */
+            height: auto;
+        }
+        .image-container button {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .image-container button:hover {
+            background-color: #2563eb;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="text-center">
+        <h1 class="text-3xl font-bold mb-4 max-w-md mx-auto px-4">Ask our AI agent any question about how we can save you significantly on your back-office admin costs</h1>
+        <div class="image-container">
+            <img src="jess.png" alt="Jess">
+            <button id="callButton">Talk to Jess</button>
+        </div>
+    </div>
+
+    <script>
+        const twilioNumber = "+61483959268";
+        const blandApiKey = "org_07c922bdb3b0e428aefda3e801f4487a39b0d41545a5be5c34ab436c363a4c177afef9e9ff27665a4e3c69";
+        const pathwayId = "9502c0fa-f7bb-4429-89af-c894bbdfd422";
+        const backendUrl = "http://localhost:3000/log-caller";
+        const destinationNumber = "+61483959268"; // Replace with desired number if different
+
+        document.getElementById("callButton").addEventListener("click", async () => {
+            try {
+                const callResponse = await fetch("https://api.bland.ai/v1/calls", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": blandApiKey,
+                        "Content-Type": "application/json",
+                        "encrypted_key": "cdcee34f-5716-454b-8631-24756140e106"
+                    },
+                    body: JSON.stringify({
+                        phone_number: destinationNumber,
+                        pathway_id: pathwayId,
+                        from: twilioNumber
+                    })
+                });
+
+                if (!callResponse.ok) {
+                    const error = await callResponse.json();
+                    throw new Error(error.message);
+                }
+
+                const logResponse = await fetch(backendUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ phone_number: destinationNumber, timestamp: new Date().toISOString() })
+                });
+
+                if (logResponse.ok) {
+                    alert("Call initiated! Jess will call you shortly.");
+                } else {
+                    throw new Error("Failed to log caller data.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert(`Failed to initiate call or log data: ${error.message}`);
+            }
+        });
+    </script>
+</body>
+</html>
